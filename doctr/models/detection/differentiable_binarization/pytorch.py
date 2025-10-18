@@ -16,11 +16,11 @@ from torchvision.ops.deform_conv import DeformConv2d
 
 from doctr.file_utils import CLASS_NAME
 
-from ...classification import mobilenet_v3_large
+from ...classification import mobilenet_v3_large, mobilenet_v3_small
 from ...utils import _bf16_to_float32, load_pretrained_params
 from .base import DBPostProcessor, _DBNet
 
-__all__ = ["DBNet", "db_resnet50", "db_resnet34", "db_mobilenet_v3_large"]
+__all__ = ["DBNet", "db_resnet50", "db_resnet34", "db_mobilenet_v3_large", "db_mobilenet_v3_small"]
 
 
 default_cfgs: dict[str, dict[str, Any]] = {
@@ -41,6 +41,12 @@ default_cfgs: dict[str, dict[str, Any]] = {
         "mean": (0.798, 0.785, 0.772),
         "std": (0.264, 0.2749, 0.287),
         "url": "https://doctr-static.mindee.com/models?id=v0.8.1/db_mobilenet_v3_large-21748dd0.pt&src=0",
+    },
+    "db_mobilenet_v3_small": {
+        "input_shape": (3, 1024, 1024),
+        "mean": (0.798, 0.785, 0.772),
+        "std": (0.264, 0.2749, 0.287),
+        "url": None,  # No pretrained model available yet
     },
 }
 
@@ -430,6 +436,39 @@ def db_mobilenet_v3_large(pretrained: bool = False, **kwargs: Any) -> DBNet:
         pretrained,
         mobilenet_v3_large,
         ["3", "6", "12", "16"],
+        "features",
+        ignore_keys=[
+            "prob_head.6.weight",
+            "prob_head.6.bias",
+            "thresh_head.6.weight",
+            "thresh_head.6.bias",
+        ],
+        **kwargs,
+    )
+
+
+def db_mobilenet_v3_small(pretrained: bool = False, **kwargs: Any) -> DBNet:
+    """DBNet as described in `"Real-time Scene Text Detection with Differentiable Binarization"
+    <https://arxiv.org/pdf/1911.08947.pdf>`_, using a MobileNet V3 Small backbone.
+
+    >>> import torch
+    >>> from doctr.models import db_mobilenet_v3_small
+    >>> model = db_mobilenet_v3_small(pretrained=False)
+    >>> input_tensor = torch.rand((1, 3, 1024, 1024), dtype=torch.float32)
+    >>> out = model(input_tensor)
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on our text detection dataset
+        **kwargs: keyword arguments of the DBNet architecture
+
+    Returns:
+        text detection architecture
+    """
+    return _dbnet(
+        "db_mobilenet_v3_small",
+        pretrained,
+        mobilenet_v3_small,
+        ["2", "4", "9", "12"],
         "features",
         ignore_keys=[
             "prob_head.6.weight",

@@ -20,6 +20,7 @@ ARCHS = [
     "db_resnet34",
     "db_resnet50",
     "db_mobilenet_v3_large",
+    "db_mobilenet_v3_small",
     "linknet_resnet18",
     "linknet_resnet34",
     "linknet_resnet50",
